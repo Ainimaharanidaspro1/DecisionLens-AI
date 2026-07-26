@@ -2,118 +2,251 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import Link from "next/link";
 
 
-export default function Dashboard(){
+export default function Dashboard() {
 
-  const [data,setData] = useState<any>(null);
+  const [analysis, setAnalysis] = useState<any>(null);
+  const [history, setHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
 
-  useEffect(()=>{
 
-    async function getData(){
+  useEffect(() => {
+    loadDashboard();
+  }, []);
 
-      const {data,error}= await supabase
+
+
+
+  async function loadDashboard() {
+
+    const { data, error } = await supabase
       .from("financial_analysis")
       .select("*")
-      .order("created_at",{ascending:false})
-      .limit(1)
-      .single();
+      .order("id", { ascending: false });
 
 
-      if(error){
-        console.log(error);
-        return;
-      }
 
+    if (error) {
 
-      setData(data);
+      console.log("SUPABASE ERROR:", error);
+      setLoading(false);
+      return;
 
     }
 
 
-    getData();
 
-  },[]);
+    if (data && data.length > 0) {
 
+      setAnalysis(data[0]);
+      setHistory(data);
 
-
-  const balance =
-  data
-  ?
-  Number(data.income)-Number(data.expense)
-  :
-  0;
+    }
 
 
+    setLoading(false);
 
-  return(
-
-    <main className="min-h-screen bg-slate-100 p-8">
-
-
-      <div className="max-w-6xl mx-auto">
+  }
 
 
-        <h1 className="text-4xl font-bold text-blue-700">
-          📊 Dashboard DecisionLens AI
+
+
+
+
+  function rupiah(value:any){
+
+    if(!value) return "Rp0";
+
+
+    return new Intl.NumberFormat(
+      "id-ID",
+      {
+        style:"currency",
+        currency:"IDR",
+        maximumFractionDigits:0
+      }
+
+    ).format(Number(value));
+
+  }
+
+
+
+
+
+
+  if(loading){
+
+    return (
+
+      <main className="
+      min-h-screen
+      flex
+      items-center
+      justify-center
+      bg-[#F8FAFC]
+      ">
+
+        <p className="text-slate-500">
+          Memuat dashboard...
+        </p>
+
+      </main>
+
+    )
+
+  }
+
+
+
+
+
+  return (
+
+    <main className="
+    min-h-screen
+    bg-gradient-to-b
+    from-white
+    via-[#F8FAFC]
+    to-[#ECFDF5]
+    px-8
+    py-12
+    ">
+
+
+      <div className="
+      max-w-6xl
+      mx-auto
+      ">
+
+
+
+        <h1 className="
+        text-4xl
+        font-bold
+        ">
+
+          Financial Dashboard
+
         </h1>
 
 
-        <p className="text-gray-500 mt-2">
-          Pantau kondisi finansial berdasarkan analisis AI terakhir.
+        <p className="
+        text-slate-600
+        mt-2
+        ">
+
+          Kelola dan pantau kondisi finansialmu bersama AI.
+
         </p>
 
 
 
-        {/* CARD SUMMARY */}
-
-        <div className="grid md:grid-cols-3 gap-6 mt-10">
 
 
-          <div className="bg-white rounded-2xl shadow p-6">
+        {
+          analysis ?
 
-            <p className="text-gray-500">
-              💰 Pendapatan
-            </p>
 
-            <h2 className="text-3xl font-bold mt-3">
+          <>
 
-              Rp {
-                data
-                ?
-                Number(data.income)
-                .toLocaleString("id-ID")
-                :
-                "0"
-              }
+          {/* SUMMARY */}
 
-            </h2>
+          <div className="
+          grid
+          md:grid-cols-3
+          gap-6
+          mt-10
+          ">
+
+
+            <SummaryCard
+
+              icon="💰"
+
+              title="Pendapatan"
+
+              value={rupiah(analysis.income)}
+
+            />
+
+
+
+            <SummaryCard
+
+              icon="🛒"
+
+              title="Pengeluaran"
+
+              value={rupiah(analysis.expense)}
+
+            />
+
+
+
+            <SummaryCard
+
+              icon="📈"
+
+              title="Sisa Dana"
+
+              value={rupiah(
+                Number(analysis.income) -
+                Number(analysis.expense)
+              )}
+
+            />
+
 
           </div>
 
 
 
 
-          <div className="bg-white rounded-2xl shadow p-6">
 
-            <p className="text-gray-500">
-              💸 Pengeluaran
-            </p>
 
-            <h2 className="text-3xl font-bold mt-3">
 
-              Rp {
-                data
-                ?
-                Number(data.expense)
-                .toLocaleString("id-ID")
-                :
-                "0"
-              }
+
+
+          {/* AI RESULT */}
+
+          <div className="
+          bg-white
+          rounded-3xl
+          border
+          shadow-sm
+          p-8
+          mt-8
+          ">
+
+
+            <h2 className="
+            text-2xl
+            font-bold
+            ">
+
+              🤖 AI Financial Insight
 
             </h2>
+
+
+
+            <div className="
+            mt-5
+            bg-emerald-50
+            rounded-2xl
+            p-6
+            whitespace-pre-line
+            text-slate-700
+            leading-relaxed
+            ">
+
+              {analysis.ai_result}
+
+            </div>
+
 
           </div>
 
@@ -121,93 +254,147 @@ export default function Dashboard(){
 
 
 
-          <div className="bg-white rounded-2xl shadow p-6">
 
-            <p className="text-gray-500">
-              💎 Sisa Dana
-            </p>
 
-            <h2 className="text-3xl font-bold mt-3">
 
-              Rp {
-                balance
-                .toLocaleString("id-ID")
-              }
+
+
+          {/* HISTORY */}
+
+          <div className="
+          bg-white
+          rounded-3xl
+          border
+          shadow-sm
+          p-8
+          mt-8
+          ">
+
+
+            <h2 className="
+            text-2xl
+            font-bold
+            ">
+
+              Riwayat Analisis
 
             </h2>
 
-          </div>
 
 
-        </div>
+            <div className="
+            mt-5
+            space-y-4
+            ">
 
-
-
-
-        {/* TARGET */}
-
-        <div className="bg-white rounded-3xl shadow p-8 mt-8">
-
-          <h2 className="text-2xl font-bold">
-            🎯 Target Finansial
-          </h2>
-
-
-          <p className="mt-3 text-gray-600">
 
             {
-              data
-              ?
-              data.saving_goal
-              :
-              "Belum ada analisis"
+              history.map((item,index)=>(
+
+
+                <div
+
+                key={index}
+
+                className="
+                border
+                rounded-2xl
+                p-5
+                flex
+                justify-between
+                ">
+
+
+                  <div>
+
+                    <p className="font-semibold">
+
+                      {rupiah(item.income)}
+
+                    </p>
+
+
+                    <p className="
+                    text-sm
+                    text-slate-500
+                    ">
+
+                      Pengeluaran:
+                      {" "}
+                      {rupiah(item.expense)}
+
+                    </p>
+
+
+                  </div>
+
+
+
+                  <span className="
+                  text-sm
+                  text-slate-400
+                  ">
+
+                    Analisis #{history.length-index}
+
+                  </span>
+
+
+                </div>
+
+
+              ))
+
             }
 
-          </p>
+
+            </div>
 
 
-        </div>
+          </div>
 
 
+          </>
 
 
-
-        {/* AI RESULT */}
-
-        <div className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-3xl shadow p-8 mt-8">
+          :
 
 
-          <h2 className="text-2xl font-bold">
-            🤖 Insight AI
-          </h2>
+          <div className="
+          mt-10
+          bg-white
+          rounded-3xl
+          p-10
+          text-center
+          ">
 
 
-          <p className="mt-4 whitespace-pre-wrap leading-7">
+            <h2 className="
+            text-xl
+            font-bold
+            ">
 
-            {
-              data
-              ?
-              data.ai_result
-              :
-              "Lakukan analisis terlebih dahulu untuk mendapatkan insight."
-            }
+              Belum Ada Data
 
-          </p>
+            </h2>
 
 
-        </div>
+            <p className="
+            text-slate-500
+            mt-3
+            ">
+
+              Lakukan analisis finansial terlebih dahulu.
+
+            </p>
 
 
+          </div>
 
 
-        <Link
-        href="/analyze"
-        className="inline-block mt-8 bg-blue-600 text-white px-6 py-3 rounded-xl"
-        >
+        }
 
-          🚀 Analisis Baru
 
-        </Link>
 
 
 
@@ -216,6 +403,78 @@ export default function Dashboard(){
 
     </main>
 
+
   )
+
+}
+
+
+
+
+
+
+
+function SummaryCard({
+
+icon,
+
+title,
+
+value
+
+}:{
+
+icon:string;
+
+title:string;
+
+value:string;
+
+}){
+
+
+return (
+
+<div className="
+bg-white
+rounded-3xl
+border
+shadow-sm
+p-6
+">
+
+
+<div className="text-3xl">
+
+{icon}
+
+</div>
+
+
+<p className="
+text-slate-500
+mt-4
+">
+
+{title}
+
+</p>
+
+
+<h3 className="
+text-xl
+font-bold
+mt-2
+">
+
+{value}
+
+</h3>
+
+
+</div>
+
+
+)
 
 }

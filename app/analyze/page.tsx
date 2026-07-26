@@ -461,6 +461,26 @@ export default function AnalyzePage() {
               ">
 
                 {result}
+                <div className="mt-6">
+
+                <a
+                href="/dashboard"
+                className="
+                inline-block
+                bg-[#0F172A]
+                text-white
+                px-6
+                py-3
+                rounded-xl
+                font-semibold
+                hover:bg-slate-800
+                transition
+                "
+                >
+                Lihat Dashboard Finansial →
+                </a>
+
+                </div>
 
               </div>
 
