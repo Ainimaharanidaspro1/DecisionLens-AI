@@ -6,47 +6,49 @@ import { supabase } from "@/lib/supabase";
 
 export default function Dashboard() {
 
-  const [analysis, setAnalysis] = useState<any>(null);
-  const [history, setHistory] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  const [transactions, setTransactions] = useState<any[]>([]);
+
+  const [category,setCategory] = useState("");
+  const [amount,setAmount] = useState("");
+  const [type,setType] = useState("expense");
+
+  const [aiResult,setAiResult] = useState("");
 
 
 
-  useEffect(() => {
-    loadDashboard();
-  }, []);
+
+  useEffect(()=>{
+
+    fetchTransactions();
+    fetchAI();
+
+  },[]);
 
 
 
 
-  async function loadDashboard() {
 
-    const { data, error } = await supabase
-      .from("financial_analysis")
+  async function fetchTransactions(){
+
+
+    const {data,error}=await supabase
+      .from("transactions")
       .select("*")
-      .order("id", { ascending: false });
+      .order("id",{ascending:false});
 
 
 
-    if (error) {
+    if(error){
 
-      console.log("SUPABASE ERROR:", error);
-      setLoading(false);
-      return;
+      console.log(error);
 
-    }
+    }else{
 
-
-
-    if (data && data.length > 0) {
-
-      setAnalysis(data[0]);
-      setHistory(data);
+      setTransactions(data || []);
 
     }
 
-
-    setLoading(false);
 
   }
 
@@ -55,9 +57,108 @@ export default function Dashboard() {
 
 
 
-  function rupiah(value:any){
+  async function fetchAI(){
 
-    if(!value) return "Rp0";
+
+    const {data,error}=await supabase
+      .from("financial_analysis")
+      .select("ai_result")
+      .order("id",{ascending:false})
+      .limit(1);
+
+
+
+    if(data && data.length){
+
+      setAiResult(data[0].ai_result);
+
+    }
+
+
+  }
+
+
+
+
+
+
+  async function addTransaction(){
+
+
+    if(!category || !amount){
+
+      alert("Lengkapi data transaksi");
+
+      return;
+
+    }
+
+
+
+    const {error}=await supabase
+      .from("transactions")
+      .insert({
+
+        category,
+
+        amount:Number(amount),
+
+        type
+
+      });
+
+
+
+
+    if(error){
+
+      alert(error.message);
+
+    }else{
+
+
+      setCategory("");
+      setAmount("");
+
+      fetchTransactions();
+
+    }
+
+
+  }
+
+
+
+
+
+
+
+  const income = transactions
+
+  .filter(item=>item.type==="income")
+
+  .reduce((a,b)=>a+Number(b.amount),0);
+
+
+
+
+  const expense = transactions
+
+  .filter(item=>item.type==="expense")
+
+  .reduce((a,b)=>a+Number(b.amount),0);
+
+
+
+  const balance = income-expense;
+
+
+
+
+
+
+
+  function rupiah(value:number){
 
 
     return new Intl.NumberFormat(
@@ -68,7 +169,8 @@ export default function Dashboard() {
         maximumFractionDigits:0
       }
 
-    ).format(Number(value));
+    ).format(value);
+
 
   }
 
@@ -77,334 +179,365 @@ export default function Dashboard() {
 
 
 
-  if(loading){
 
-    return (
+return (
 
-      <main className="
-      min-h-screen
-      flex
-      items-center
-      justify-center
-      bg-[#F8FAFC]
-      ">
+<main className="
+min-h-screen
+bg-[#F8FAFC]
+px-8
+py-10
+">
 
-        <p className="text-slate-500">
-          Memuat dashboard...
-        </p>
 
-      </main>
+<div className="
+max-w-6xl
+mx-auto
+">
 
-    )
 
-  }
 
+<h1 className="
+text-4xl
+font-bold
+">
 
+Financial Dashboard
 
+</h1>
 
 
-  return (
+<p className="
+text-slate-500
+mt-2
+">
 
-    <main className="
-    min-h-screen
-    bg-gradient-to-b
-    from-white
-    via-[#F8FAFC]
-    to-[#ECFDF5]
-    px-8
-    py-12
-    ">
+Kelola pemasukan, pengeluaran, dan keputusan finansial.
 
+</p>
 
-      <div className="
-      max-w-6xl
-      mx-auto
-      ">
 
 
 
-        <h1 className="
-        text-4xl
-        font-bold
-        ">
 
-          Financial Dashboard
 
-        </h1>
 
+{/* SUMMARY */}
 
-        <p className="
-        text-slate-600
-        mt-2
-        ">
+<div className="
+grid
+md:grid-cols-3
+gap-6
+mt-8
+">
 
-          Kelola dan pantau kondisi finansialmu bersama AI.
 
-        </p>
+<Card
+title="Total Income"
+value={rupiah(income)}
+/>
 
 
+<Card
+title="Total Expense"
+value={rupiah(expense)}
+/>
 
 
+<Card
+title="Balance"
+value={rupiah(balance)}
+/>
 
-        {
-          analysis ?
 
 
-          <>
+</div>
 
-          {/* SUMMARY */}
 
-          <div className="
-          grid
-          md:grid-cols-3
-          gap-6
-          mt-10
-          ">
 
 
-            <SummaryCard
 
-              icon="💰"
 
-              title="Pendapatan"
 
-              value={rupiah(analysis.income)}
 
-            />
 
 
+{/* ADD TRANSACTION */}
 
-            <SummaryCard
 
-              icon="🛒"
+<div className="
+bg-white
+rounded-3xl
+p-8
+mt-8
+shadow-sm
+">
 
-              title="Pengeluaran"
 
-              value={rupiah(analysis.expense)}
+<h2 className="
+text-xl
+font-bold
+">
 
-            />
+Tambah Transaksi
 
+</h2>
 
 
-            <SummaryCard
 
-              icon="📈"
+<div className="
+grid
+md:grid-cols-3
+gap-4
+mt-5
+">
 
-              title="Sisa Dana"
 
-              value={rupiah(
-                Number(analysis.income) -
-                Number(analysis.expense)
-              )}
+<input
 
-            />
+className="border rounded-xl p-3"
 
+placeholder="Kategori"
 
-          </div>
+value={category}
 
+onChange={(e)=>setCategory(e.target.value)}
 
+/>
 
 
 
+<input
 
+className="border rounded-xl p-3"
 
+placeholder="Jumlah"
 
+value={amount}
 
-          {/* AI RESULT */}
+onChange={(e)=>setAmount(e.target.value)}
 
-          <div className="
-          bg-white
-          rounded-3xl
-          border
-          shadow-sm
-          p-8
-          mt-8
-          ">
+/>
 
 
-            <h2 className="
-            text-2xl
-            font-bold
-            ">
 
-              🤖 AI Financial Insight
+<select
 
-            </h2>
+className="border rounded-xl p-3"
 
+value={type}
 
+onChange={(e)=>setType(e.target.value)}
 
-            <div className="
-            mt-5
-            bg-emerald-50
-            rounded-2xl
-            p-6
-            whitespace-pre-line
-            text-slate-700
-            leading-relaxed
-            ">
+>
 
-              {analysis.ai_result}
 
-            </div>
+<option value="expense">
+Pengeluaran
+</option>
 
 
-          </div>
+<option value="income">
+Pemasukan
+</option>
 
 
+</select>
 
 
 
+</div>
 
 
 
 
+<button
 
-          {/* HISTORY */}
+onClick={addTransaction}
 
-          <div className="
-          bg-white
-          rounded-3xl
-          border
-          shadow-sm
-          p-8
-          mt-8
-          ">
+className="
+mt-5
+bg-slate-900
+text-white
+px-6
+py-3
+rounded-xl
+"
 
+>
 
-            <h2 className="
-            text-2xl
-            font-bold
-            ">
+Simpan Transaksi
 
-              Riwayat Analisis
+</button>
 
-            </h2>
 
 
+</div>
 
-            <div className="
-            mt-5
-            space-y-4
-            ">
 
 
-            {
-              history.map((item,index)=>(
 
 
-                <div
 
-                key={index}
 
-                className="
-                border
-                rounded-2xl
-                p-5
-                flex
-                justify-between
-                ">
 
 
-                  <div>
+{/* TRANSACTION LIST */}
 
-                    <p className="font-semibold">
 
-                      {rupiah(item.income)}
+<div className="
+bg-white
+rounded-3xl
+p-8
+mt-8
+shadow-sm
+">
 
-                    </p>
 
+<h2 className="
+text-xl
+font-bold
+">
 
-                    <p className="
-                    text-sm
-                    text-slate-500
-                    ">
+Transaksi Terbaru
 
-                      Pengeluaran:
-                      {" "}
-                      {rupiah(item.expense)}
+</h2>
 
-                    </p>
 
 
-                  </div>
 
+<div className="
+mt-5
+space-y-3
+">
 
 
-                  <span className="
-                  text-sm
-                  text-slate-400
-                  ">
+{
 
-                    Analisis #{history.length-index}
+transactions.map((item)=>(
 
-                  </span>
 
+<div
 
-                </div>
+key={item.id}
 
+className="
+border
+rounded-xl
+p-4
+flex
+justify-between
+"
 
-              ))
 
-            }
+>
 
 
-            </div>
+<div>
 
+<p className="font-semibold">
 
-          </div>
+{item.category}
 
+</p>
 
-          </>
 
+<p className="text-sm text-slate-500">
 
-          :
+{item.type}
 
+</p>
 
-          <div className="
-          mt-10
-          bg-white
-          rounded-3xl
-          p-10
-          text-center
-          ">
 
+</div>
 
-            <h2 className="
-            text-xl
-            font-bold
-            ">
 
-              Belum Ada Data
 
-            </h2>
+<p className="font-bold">
 
+{
+item.type==="income"
+?
+"+ "
+:
+"- "
+}
 
-            <p className="
-            text-slate-500
-            mt-3
-            ">
+{rupiah(Number(item.amount))}
 
-              Lakukan analisis finansial terlebih dahulu.
+</p>
 
-            </p>
 
+</div>
 
-          </div>
 
+))
 
-        }
+}
 
 
 
+</div>
 
 
-      </div>
 
+</div>
 
-    </main>
 
 
-  )
+
+
+
+
+
+
+{/* AI */}
+
+
+<div className="
+bg-emerald-50
+rounded-3xl
+p-8
+mt-8
+">
+
+
+<h2 className="
+text-xl
+font-bold
+">
+
+🤖 AI Recommendation
+
+</h2>
+
+
+<p className="
+mt-4
+whitespace-pre-line
+text-slate-700
+">
+
+{aiResult || "Belum ada rekomendasi AI"}
+
+</p>
+
+
+</div>
+
+
+
+
+
+
+</div>
+
+
+</main>
+
+
+)
+
 
 }
 
@@ -414,17 +547,13 @@ export default function Dashboard() {
 
 
 
-function SummaryCard({
-
-icon,
+function Card({
 
 title,
 
 value
 
 }:{
-
-icon:string;
 
 title:string;
 
@@ -433,27 +562,18 @@ value:string;
 }){
 
 
-return (
+return(
 
 <div className="
 bg-white
 rounded-3xl
-border
-shadow-sm
 p-6
+shadow-sm
 ">
-
-
-<div className="text-3xl">
-
-{icon}
-
-</div>
 
 
 <p className="
 text-slate-500
-mt-4
 ">
 
 {title}
@@ -461,20 +581,20 @@ mt-4
 </p>
 
 
-<h3 className="
-text-xl
+<h2 className="
+text-2xl
 font-bold
-mt-2
+mt-3
 ">
 
 {value}
 
-</h3>
+</h2>
 
 
 </div>
 
-
 )
+
 
 }
