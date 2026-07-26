@@ -1,45 +1,36 @@
 import Link from "next/link";
 
 export default function Home() {
+
   return (
-    <main className="min-h-screen bg-gradient-to-b from-white via-[#F8FAFC] to-[#ECFDF5] text-[#0F172A]">
 
-
-      {/* NAVBAR */}
-      <nav className="max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
-
-        <h1 className="text-xl font-bold">
-          💰 DecisionLens AI
-        </h1>
-
-
-        <div className="flex gap-8 text-sm font-medium text-slate-600">
-
-          <Link href="/">
-            Home
-          </Link>
-
-          <Link href="/analyze">
-            Analyze
-          </Link>
-
-          <Link href="/dashboard">
-            Dashboard
-          </Link>
-
-        </div>
-
-      </nav>
-
-
-
-
+    <main className="
+      min-h-screen
+      bg-gradient-to-b
+      from-white
+      via-[#F8FAFC]
+      to-[#ECFDF5]
+      text-[#0F172A]
+    ">
 
       {/* HERO */}
-      <section className="max-w-7xl mx-auto px-8 py-20">
+
+      <section className="
+        max-w-7xl
+        mx-auto
+        px-8
+        pt-8
+        pb-20
+      ">
 
 
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="
+          grid
+          lg:grid-cols-2
+          gap-16
+          items-center
+        ">
+
 
 
           {/* TEXT */}
@@ -47,7 +38,17 @@ export default function Home() {
           <div>
 
 
-            <span className="inline-flex items-center bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full text-sm font-semibold">
+            <span className="
+              inline-flex
+              items-center
+              bg-emerald-100
+              text-emerald-700
+              px-4
+              py-2
+              rounded-full
+              text-sm
+              font-semibold
+            ">
 
               🤖 AI Financial Assistant
 
@@ -56,22 +57,44 @@ export default function Home() {
 
 
 
-            <h2 className="text-5xl font-bold leading-tight mt-6">
+
+            <h2 className="
+              text-5xl
+              font-bold
+              leading-tight
+              mt-6
+            ">
+
 
               Make Better
 
+
               <br />
 
-              <span className="text-emerald-600">
+
+              <span className="
+                text-emerald-600
+              ">
+
                 Financial Decisions
+
               </span>
+
 
             </h2>
 
 
 
 
-            <p className="mt-6 text-lg text-slate-600 leading-relaxed max-w-xl">
+
+
+            <p className="
+              mt-6
+              text-lg
+              text-slate-600
+              leading-relaxed
+              max-w-xl
+            ">
 
               DecisionLens AI membantu pengguna memahami kondisi
               finansial, menganalisis pengeluaran, dan mendapatkan
@@ -82,9 +105,25 @@ export default function Home() {
 
 
 
+
+
             <Link
+
               href="/analyze"
-              className="inline-block mt-8 bg-[#0F172A] text-white px-8 py-4 rounded-xl font-semibold hover:bg-slate-800 transition"
+
+              className="
+                inline-block
+                mt-8
+                bg-[#0F172A]
+                text-white
+                px-8
+                py-4
+                rounded-xl
+                font-semibold
+                hover:bg-slate-800
+                transition
+              "
+
             >
 
               Mulai Analisis
@@ -100,77 +139,163 @@ export default function Home() {
 
 
 
-          {/* APP MOCKUP */}
 
-          <div className="flex justify-center">
-
-
-            <div className="relative">
+          {/* MOCKUP */}
 
 
-              <div className="absolute inset-0 bg-emerald-300 blur-3xl opacity-25 rounded-full"></div>
+          <div className="
+            flex
+            justify-center
+          ">
+
+
+            <div className="
+              relative
+            ">
+
+
+              <div className="
+                absolute
+                inset-0
+                bg-emerald-300
+                blur-3xl
+                opacity-25
+                rounded-full
+              "></div>
 
 
 
-              <div className="relative w-[380px] bg-white rounded-[32px] shadow-xl border border-slate-100 p-7">
 
 
-                <div className="flex justify-between items-start">
+              <div className="
+                relative
+                w-[380px]
+                bg-white
+                rounded-[32px]
+                shadow-xl
+                border
+                border-slate-100
+                p-7
+              ">
+
+
+
+                <div className="
+                  flex
+                  justify-between
+                  items-start
+                ">
 
 
                   <div>
 
-                    <h3 className="font-bold text-lg">
+
+                    <h3 className="
+                      font-bold
+                      text-lg
+                    ">
+
                       Financial Overview
+
                     </h3>
 
-                    <p className="text-xs text-slate-500 mt-1">
+
+                    <p className="
+                      text-xs
+                      text-slate-500
+                      mt-1
+                    ">
+
                       Contoh tampilan hasil analisis
+
                     </p>
+
 
                   </div>
 
 
 
-                  <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">
+
+
+                  <span className="
+                    bg-emerald-100
+                    text-emerald-700
+                    text-xs
+                    font-bold
+                    px-3
+                    py-1
+                    rounded-full
+                  ">
 
                     SAMPLE
 
                   </span>
 
 
+
                 </div>
 
 
 
 
 
-                <div className="mt-7 bg-[#0F172A] rounded-2xl p-6 text-white">
 
 
-                  <p className="text-sm text-slate-300">
+                <div className="
+                  mt-7
+                  bg-[#0F172A]
+                  rounded-2xl
+                  p-6
+                  text-white
+                ">
+
+
+                  <p className="
+                    text-sm
+                    text-slate-300
+                  ">
+
                     Financial Health Score
+
                   </p>
 
 
 
-                  <h3 className="text-5xl font-bold mt-2">
+                  <h3 className="
+                    text-5xl
+                    font-bold
+                    mt-2
+                  ">
 
                     85
 
-                    <span className="text-xl text-slate-400">
+                    <span className="
+                      text-xl
+                      text-slate-400
+                    ">
+
                       /100
+
                     </span>
+
 
                   </h3>
 
 
 
-                  <p className="text-emerald-400 mt-3 font-medium">
+
+                  <p className="
+                    text-emerald-400
+                    mt-3
+                    font-medium
+                  ">
+
                     Kondisi Finansial Baik
+
                   </p>
 
 
+
                 </div>
 
 
@@ -179,42 +304,31 @@ export default function Home() {
 
 
 
-                <div className="grid grid-cols-2 gap-4 mt-5">
+                <div className="
+                  grid
+                  grid-cols-2
+                  gap-4
+                  mt-5
+                ">
 
 
-                  <div className="bg-slate-50 rounded-xl p-4">
+                  <InfoCard
 
+                    title="Pendapatan"
 
-                    <p className="text-xs text-slate-500">
-                      Pendapatan
-                    </p>
+                    value="Rp8.000.000"
 
-
-                    <p className="font-bold mt-2">
-                      Rp8.000.000
-                    </p>
-
-
-                  </div>
-
+                  />
 
 
 
+                  <InfoCard
 
-                  <div className="bg-slate-50 rounded-xl p-4">
+                    title="Pengeluaran"
 
+                    value="Rp4.500.000"
 
-                    <p className="text-xs text-slate-500">
-                      Pengeluaran
-                    </p>
-
-
-                    <p className="font-bold mt-2">
-                      Rp4.500.000
-                    </p>
-
-
-                  </div>
+                  />
 
 
                 </div>
@@ -225,17 +339,33 @@ export default function Home() {
 
 
 
-                <div className="mt-5 bg-emerald-50 rounded-xl p-4">
+                <div className="
+                  mt-5
+                  bg-emerald-50
+                  rounded-xl
+                  p-4
+                ">
 
 
-                  <p className="font-bold text-emerald-700 text-sm">
+
+                  <p className="
+                    font-bold
+                    text-emerald-700
+                    text-sm
+                  ">
 
                     🤖 AI Recommendation
 
                   </p>
 
 
-                  <p className="text-sm text-slate-700 mt-2 leading-relaxed">
+
+                  <p className="
+                    text-sm
+                    text-slate-700
+                    mt-2
+                    leading-relaxed
+                  ">
 
                     Optimalkan pengeluaran rutin dan
                     tingkatkan alokasi tabungan.
@@ -243,12 +373,12 @@ export default function Home() {
                   </p>
 
 
+
                 </div>
 
 
 
               </div>
-
 
 
             </div>
@@ -269,12 +399,23 @@ export default function Home() {
 
 
 
+
       {/* FEATURES */}
 
-      <section className="max-w-7xl mx-auto px-8 py-14">
+
+      <section className="
+        max-w-7xl
+        mx-auto
+        px-8
+        py-14
+      ">
 
 
-        <h2 className="text-3xl font-bold text-center">
+        <h2 className="
+          text-3xl
+          font-bold
+          text-center
+        ">
 
           Financial Intelligence
 
@@ -282,7 +423,14 @@ export default function Home() {
 
 
 
-        <div className="grid md:grid-cols-3 gap-10 mt-12">
+
+
+        <div className="
+          grid
+          md:grid-cols-3
+          gap-10
+          mt-12
+        ">
 
 
           <Feature
@@ -335,13 +483,26 @@ export default function Home() {
 
       {/* HOW IT WORKS */}
 
-      <section className="bg-[#ECFDF5]">
+
+      <section className="
+        bg-[#ECFDF5]
+      ">
 
 
-        <div className="max-w-6xl mx-auto px-8 py-16">
+        <div className="
+          max-w-6xl
+          mx-auto
+          px-8
+          py-16
+        ">
 
 
-          <h2 className="text-3xl font-bold text-center">
+
+          <h2 className="
+            text-3xl
+            font-bold
+            text-center
+          ">
 
             How DecisionLens AI Works
 
@@ -350,7 +511,13 @@ export default function Home() {
 
 
 
-          <div className="grid md:grid-cols-3 gap-8 mt-12">
+          <div className="
+            grid
+            md:grid-cols-3
+            gap-8
+            mt-12
+          ">
+
 
 
             <Step
@@ -403,19 +570,94 @@ export default function Home() {
 
 
 
+
       {/* FOOTER */}
 
-      <footer className="text-center py-5 border-t text-sm text-slate-400">
+
+      <footer className="
+        text-center
+        py-5
+        border-t
+        text-sm
+        text-slate-400
+      ">
+
 
         DecisionLens AI · AI-powered financial decision assistant
+
 
       </footer>
 
 
 
+
     </main>
+
   );
+
 }
+
+
+
+
+
+
+
+
+
+function InfoCard({
+
+title,
+
+value
+
+}:{
+
+title:string;
+
+value:string;
+
+}){
+
+
+return (
+
+<div className="
+bg-slate-50
+rounded-xl
+p-4
+">
+
+
+<p className="
+text-xs
+text-slate-500
+">
+
+{title}
+
+</p>
+
+
+
+<p className="
+font-bold
+mt-2
+">
+
+{value}
+
+</p>
+
+
+</div>
+
+)
+
+}
+
+
+
 
 
 
@@ -432,30 +674,55 @@ title,
 desc
 
 }:{
+
 icon:string;
+
 title:string;
+
 desc:string;
+
 }){
 
 
 return (
 
-<div className="text-center">
+<div className="
+text-center
+">
 
 
-<div className="text-4xl">
+<div className="
+text-4xl
+">
+
 {icon}
+
 </div>
 
 
-<h3 className="text-xl font-bold mt-4">
+
+<h3 className="
+text-xl
+font-bold
+mt-4
+">
+
 {title}
+
 </h3>
 
 
-<p className="text-slate-600 mt-2">
+
+
+<p className="
+text-slate-600
+mt-2
+">
+
 {desc}
+
 </p>
+
 
 
 </div>
@@ -463,6 +730,8 @@ return (
 )
 
 }
+
+
 
 
 
@@ -479,29 +748,61 @@ title,
 desc
 
 }:{
+
 number:string;
+
 title:string;
+
 desc:string;
+
 }){
 
 
 return (
 
-<div className="bg-white rounded-2xl p-6 border border-emerald-100 shadow-sm">
+<div className="
+bg-white
+rounded-2xl
+p-6
+border
+border-emerald-100
+shadow-sm
+">
 
 
-<div className="text-emerald-600 text-3xl font-bold">
+<div className="
+text-emerald-600
+text-3xl
+font-bold
+">
+
 {number}
+
 </div>
 
 
-<h3 className="text-xl font-bold mt-4">
+
+<h3 className="
+text-xl
+font-bold
+mt-4
+">
+
 {title}
+
 </h3>
 
 
-<p className="text-slate-600 mt-3 leading-relaxed">
+
+
+<p className="
+text-slate-600
+mt-3
+leading-relaxed
+">
+
 {desc}
+
 </p>
 
 

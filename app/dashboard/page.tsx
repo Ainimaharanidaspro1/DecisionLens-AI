@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+
 import {
   ResponsiveContainer,
   LineChart,
@@ -9,19 +10,26 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  PieChart,
-  Pie,
-  Cell
+  CartesianGrid,
 } from "recharts";
 
 
-export default function Dashboard() {
+export default function Dashboard(){
 
+
+const [analysis,setAnalysis]=useState<any>(null);
 
 const [transactions,setTransactions]=useState<any[]>([]);
+
 const [goal,setGoal]=useState<any>(null);
 
-const [modal,setModal]=useState(false);
+const [aiInsight,setAiInsight]=useState(
+"Belum ada analisis AI. Silakan lakukan analisis terlebih dahulu."
+);
+
+
+const [showModal,setShowModal]=useState(false);
+
 
 const [category,setCategory]=useState("");
 const [amount,setAmount]=useState("");
@@ -29,51 +37,146 @@ const [type,setType]=useState("expense");
 
 
 
+
+
 useEffect(()=>{
 
-loadTransactions();
-loadGoal();
+getAnalysis();
+getTransactions();
+getGoal();
+getInsight();
 
 },[]);
 
 
 
-async function loadTransactions(){
 
-const {data}=await supabase
+
+
+// AMBIL HASIL ANALISIS AI
+
+async function getAnalysis(){
+
+
+const {data,error}=await supabase
+.from("financial_analysis")
+.select("*")
+.order("created_at",{ascending:false})
+.limit(1);
+
+
+
+if(!error && data && data.length){
+
+setAnalysis(data[0]);
+
+}
+
+
+}
+
+
+
+
+
+
+// AMBIL TRANSAKSI TAMBAHAN
+
+async function getTransactions(){
+
+
+const {data,error}=await supabase
 .from("transactions")
 .select("*")
 .order("created_at",{ascending:false});
 
 
-setTransactions(data||[]);
+
+if(!error){
+
+setTransactions(data || []);
+
+}
+
 
 }
 
 
 
-async function loadGoal(){
 
-const {data}=await supabase
+
+
+
+async function getGoal(){
+
+
+const {data,error}=await supabase
 .from("financial_goals")
 .select("*")
 .limit(1);
 
 
-if(data?.length){
+
+if(!error && data?.length){
+
 setGoal(data[0]);
-}
 
 }
 
 
+}
+
+
+
+
+
+
+
+async function getInsight(){
+
+
+const {data,error}=await supabase
+.from("financial_analysis")
+.select("*")
+.order("created_at",{ascending:false})
+.limit(1);
+
+
+
+if(!error && data?.length){
+
+
+setAiInsight(
+data[0].ai_result ||
+"Tidak ada rekomendasi AI."
+);
+
+
+}
+
+
+}
+
+
+
+
+
+
+
+
+
+// TAMBAH TRANSAKSI
 
 async function addTransaction(){
 
+
 if(!category || !amount){
-alert("Lengkapi data");
+
+alert("Lengkapi data transaksi");
 return;
+
 }
+
 
 
 const {error}=await supabase
@@ -81,10 +184,14 @@ const {error}=await supabase
 .insert({
 
 category,
+
 amount:Number(amount),
+
 type
 
+
 });
+
 
 
 if(error){
@@ -95,108 +202,174 @@ return;
 }
 
 
+
 setCategory("");
 setAmount("");
-setModal(false);
 
-loadTransactions();
+setShowModal(false);
+
+
+getTransactions();
+
 
 }
 
 
 
+
+
+
+
+
+
+// HITUNG TOTAL
+
 const income =
+
+Number(analysis?.income || 0)
+
++
+
 transactions
-.filter(t=>t.type==="income")
+
+.filter(item=>item.type==="income")
+
 .reduce(
-(a,b)=>a+Number(b.amount),
+
+(total,item)=>
+
+total + Number(item.amount),
+
 0
+
 );
+
+
+
+
 
 
 const expense =
+
+
+Number(analysis?.expense || 0)
+
++
+
 transactions
-.filter(t=>t.type==="expense")
+
+.filter(item=>item.type==="expense")
+
 .reduce(
-(a,b)=>a+Number(b.amount),
+
+(total,item)=>
+
+total + Number(item.amount),
+
 0
+
 );
 
 
 
-const balance=income-expense;
+
+
+const balance = income-expense;
+
+
+
+
+
+const score =
+
+income===0
+
+?
+
+0
+
+:
+
+Math.min(
+
+Math.round(
+
+(balance/income)*100
+
+),
+
+100
+
+);
+
+
+
+
 
 
 
 function rupiah(value:number){
 
 return new Intl.NumberFormat(
+
 "id-ID",
+
 {
+
 style:"currency",
+
 currency:"IDR",
+
 maximumFractionDigits:0
+
 }
+
 ).format(value);
 
+
 }
 
 
 
 
 
-const cashData=[
+
+
+const chartData=[
 
 {
-name:"Pemasukan",
+
+name:"Pendapatan",
+
 value:income
+
 },
 
 {
+
 name:"Pengeluaran",
+
 value:expense
+
 }
+
 
 ];
 
 
 
-const categoryData=
-Object.values(
-
-transactions
-.filter(t=>t.type==="expense")
-.reduce((acc:any,item)=>{
 
 
-if(!acc[item.category]){
-
-acc[item.category]={
-name:item.category,
-value:0
-}
-
-}
-
-
-acc[item.category].value+=Number(item.amount);
-
-
-return acc;
-
-
-},{})
-
-);
 
 
 
 
 return (
 
+
 <main className="
 min-h-screen
-bg-slate-50
+bg-[#FAF7F0]
 p-6
 ">
 
@@ -207,14 +380,14 @@ mx-auto
 ">
 
 
-{/* HEADER */}
 
-<div>
+
+
 
 <h1 className="
 text-3xl
 font-bold
-text-slate-900
+text-[#1F2937]
 ">
 
 Dashboard Finansial
@@ -222,17 +395,17 @@ Dashboard Finansial
 </h1>
 
 
+
 <p className="
-text-slate-500
+text-gray-500
 mt-2
 ">
 
-Pantau pemasukan, pengeluaran, dan tujuan keuangan kamu.
+Pantau kondisi finansial berdasarkan analisis AI dan transaksi.
 
 </p>
 
 
-</div>
 
 
 
@@ -240,77 +413,83 @@ Pantau pemasukan, pengeluaran, dan tujuan keuangan kamu.
 
 
 
-{/* BALANCE */}
+{/* SCORE */}
 
-<div className="
+
+<section className="
 mt-8
+bg-[#166534]
 rounded-3xl
-bg-gradient-to-r
-from-teal-700
-to-emerald-500
 p-8
 text-white
-shadow-lg
 ">
 
 
-<p className="opacity-80">
+<p className="opacity-70">
 
-Total Saldo
+Financial Health Score
 
 </p>
 
 
 <h2 className="
-text-4xl
+text-6xl
 font-bold
 mt-3
 ">
 
-{rupiah(balance)}
+{score}
+
+<span className="
+text-2xl
+">
+
+/100
+
+</span>
 
 </h2>
 
 
+
+
 <div className="
-mt-6
-flex
-gap-8
-text-sm
+mt-5
+inline-block
+bg-[#DCFCE7]
+text-[#166534]
+px-4
+py-2
+rounded-full
 ">
 
+{
 
-<div>
+score>=80
 
-<p className="opacity-80">
-Pemasukan
-</p>
+?
 
-<p className="font-semibold">
-{rupiah(income)}
-</p>
+"Keuangan Sehat"
 
-</div>
+:
 
+score>=50
 
+?
 
-<div>
+"Perlu Perhatian"
 
-<p className="opacity-80">
-Pengeluaran
-</p>
+:
 
-<p className="font-semibold">
-{rupiah(expense)}
-</p>
+"Perlu Perbaikan"
 
-</div>
+}
 
 
 </div>
 
 
-</div>
+</section>
 
 
 
@@ -320,38 +499,79 @@ Pengeluaran
 
 
 
-{/* GRAPH */}
+{/* SUMMARY */}
 
-<div className="
+
+<section className="
 grid
-lg:grid-cols-2
-gap-6
+md:grid-cols-3
+gap-5
 mt-6
 ">
 
 
+<Card
 
-<div className="
+title="Pendapatan"
+
+value={rupiah(income)}
+
+/>
+
+
+<Card
+
+title="Pengeluaran"
+
+value={rupiah(expense)}
+
+/>
+
+
+<Card
+
+title="Sisa Dana"
+
+value={rupiah(balance)}
+
+/>
+
+
+</section>
+
+
+
+
+
+
+
+
+
+{/* CHART */}
+
+
+<section className="
+mt-6
 bg-white
 rounded-3xl
-border
 p-6
 ">
 
 
 <h2 className="
 font-bold
-text-lg
+text-xl
 ">
 
-Cash Flow
+Financial Overview
 
 </h2>
 
 
+
 <div className="
-h-64
-mt-4
+h-72
+mt-5
 ">
 
 
@@ -361,10 +581,14 @@ height="100%"
 >
 
 
-<LineChart data={cashData}>
+<LineChart data={chartData}>
+
+
+<CartesianGrid strokeDasharray="3 3"/>
 
 
 <XAxis dataKey="name"/>
+
 
 <YAxis/>
 
@@ -378,7 +602,7 @@ type="monotone"
 
 dataKey="value"
 
-stroke="#0F766E"
+stroke="#166534"
 
 strokeWidth={3}
 
@@ -394,93 +618,7 @@ strokeWidth={3}
 </div>
 
 
-</div>
-
-
-
-
-
-
-
-<div className="
-bg-white
-rounded-3xl
-border
-p-6
-">
-
-
-<h2 className="
-font-bold
-text-lg
-">
-
-Pengeluaran
-
-</h2>
-
-
-
-<div className="
-h-64
-mt-4
-">
-
-
-<ResponsiveContainer
-width="100%"
-height="100%"
->
-
-
-<PieChart>
-
-
-<Pie
-
-data={categoryData}
-
-dataKey="value"
-
-nameKey="name"
-
-outerRadius={90}
-
->
-
-
-{
-categoryData.map((_,i)=>(
-
-<Cell
-key={i}
-/>
-
-))
-}
-
-
-</Pie>
-
-
-<Tooltip/>
-
-
-</PieChart>
-
-
-</ResponsiveContainer>
-
-
-
-</div>
-
-
-
-</div>
-
-
-</div>
+</section>
 
 
 
@@ -490,112 +628,40 @@ key={i}
 
 
 
+{/* AI */}
 
-{/* GOAL */}
 
-<div className="
-bg-white
-rounded-3xl
-border
-p-6
+<section className="
 mt-6
+bg-[#F5E6C8]
+rounded-3xl
+p-6
 ">
 
 
 <h2 className="
+text-xl
 font-bold
-text-lg
+text-[#166534]
 ">
 
-🎯 Target Keuangan
+🤖 AI Insight
 
 </h2>
 
 
-{
-
-goal ?
-
-<>
-
-<div className="
-flex
-justify-between
-mt-5
-">
-
-<span>
-
-{goal.goal_name}
-
-</span>
-
-
-<span>
-
-{
-Math.round(
-goal.current_amount /
-goal.target_amount *
-100
-)
-}%
-
-</span>
-
-
-</div>
-
-
-
-<div className="
-h-3
-bg-slate-200
-rounded-full
-mt-3
-">
-
-
-<div
-
-className="
-h-3
-bg-teal-600
-rounded-full
-"
-
-style={{
-
-width:
-`${goal.current_amount /
-goal.target_amount *
-100}%`
-
-}}
-
-/>
-
-
-</div>
-
-</>
-
-
-:
 
 <p className="
-text-slate-500
 mt-4
+leading-relaxed
 ">
 
-Belum ada target keuangan.
+{aiInsight}
 
 </p>
 
-}
 
-
-</div>
+</section>
 
 
 
@@ -605,25 +671,26 @@ Belum ada target keuangan.
 
 
 
-{/* TRANSACTION */}
+{/* TRANSACTIONS */}
 
-<div className="
+
+<section className="
+mt-6
 bg-white
 rounded-3xl
-border
 p-6
-mt-6
 ">
 
 
 <h2 className="
+text-xl
 font-bold
-text-lg
 ">
 
-Transaksi Terbaru
+Transaksi Tambahan
 
 </h2>
+
 
 
 <div className="
@@ -634,13 +701,13 @@ space-y-4
 
 {
 
-transactions.length===0 ?
+transactions.length===0
 
-<p className="
-text-slate-500
-">
+?
 
-Belum ada transaksi.
+<p className="text-gray-500">
+
+Belum ada transaksi tambahan.
 
 </p>
 
@@ -648,9 +715,7 @@ Belum ada transaksi.
 :
 
 
-transactions
-.slice(0,5)
-.map(item=>(
+transactions.map(item=>(
 
 
 <div
@@ -676,21 +741,32 @@ pb-3
 <span className={
 
 item.type==="income"
+
 ?
-"text-teal-600 font-semibold"
+
+"text-green-600 font-bold"
+
 :
-"text-red-500 font-semibold"
+
+"text-red-500 font-bold"
 
 }>
 
 
 {
+
 item.type==="income"
+
 ?
+
 "+ "
+
 :
+
 "- "
+
 }
+
 
 
 {rupiah(Number(item.amount))}
@@ -708,12 +784,11 @@ item.type==="income"
 }
 
 
-</div>
-
 
 </div>
 
 
+</section>
 
 
 
@@ -733,9 +808,10 @@ item.type==="income"
 
 {/* BUTTON */}
 
+
 <button
 
-onClick={()=>setModal(true)}
+onClick={()=>setShowModal(true)}
 
 className="
 fixed
@@ -744,15 +820,9 @@ bottom-8
 w-16
 h-16
 rounded-full
-bg-teal-700
+bg-[#166534]
 text-white
-shadow-xl
-flex
-items-center
-justify-center
 text-4xl
-hover:scale-105
-transition
 "
 
 >
@@ -771,9 +841,10 @@ transition
 
 {/* MODAL */}
 
+
 {
 
-modal &&
+showModal &&
 
 <div className="
 fixed
@@ -782,7 +853,6 @@ bg-black/40
 flex
 items-center
 justify-center
-z-50
 ">
 
 
@@ -796,8 +866,8 @@ max-w-md
 
 
 <h2 className="
-text-xl
 font-bold
+text-xl
 ">
 
 Tambah Transaksi
@@ -820,11 +890,10 @@ placeholder="Kategori"
 
 value={category}
 
-onChange={
-e=>setCategory(e.target.value)
-}
+onChange={e=>setCategory(e.target.value)}
 
 />
+
 
 
 
@@ -842,11 +911,11 @@ placeholder="Jumlah"
 
 value={amount}
 
-onChange={
-e=>setAmount(e.target.value)
-}
+onChange={e=>setAmount(e.target.value)}
 
 />
+
+
 
 
 
@@ -862,24 +931,28 @@ mt-3
 
 value={type}
 
-onChange={
-e=>setType(e.target.value)
-}
+onChange={e=>setType(e.target.value)}
 
 >
 
 
 <option value="expense">
+
 Pengeluaran
+
 </option>
 
 
 <option value="income">
+
 Pemasukan
+
 </option>
 
 
 </select>
+
+
 
 
 
@@ -888,12 +961,12 @@ Pemasukan
 onClick={addTransaction}
 
 className="
-w-full
 mt-5
-bg-teal-700
+w-full
+bg-[#166534]
 text-white
-rounded-xl
 py-3
+rounded-xl
 "
 
 >
@@ -903,17 +976,79 @@ Simpan
 </button>
 
 
-
 </div>
 
 
 </div>
+
 
 }
 
 
+
 </main>
 
+
+);
+
+
+}
+
+
+
+
+
+
+
+
+
+function Card({
+
+title,
+
+value
+
+}:{
+
+title:string;
+
+value:string;
+
+}){
+
+
+return (
+
+<div className="
+bg-white
+rounded-3xl
+p-6
+shadow-sm
+">
+
+
+<p className="text-gray-500">
+
+{title}
+
+</p>
+
+
+<h3 className="
+text-2xl
+font-bold
+text-[#166534]
+mt-3
+">
+
+{value}
+
+</h3>
+
+
+</div>
+
 )
+
 
 }

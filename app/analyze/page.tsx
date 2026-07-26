@@ -3,53 +3,71 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 
+
 export default function AnalyzePage() {
 
-  const [income, setIncome] = useState("");
-  const [expense, setExpense] = useState("");
-  const [goal, setGoal] = useState("");
-  const [problem, setProblem] = useState("");
 
-  const [result, setResult] = useState("");
+  const [income,setIncome] = useState("");
+  const [expense,setExpense] = useState("");
+  const [goal,setGoal] = useState("");
+  const [problem,setProblem] = useState("");
 
-  const [loading, setLoading] = useState(false);
+  const [result,setResult] = useState("");
+
+  const [loading,setLoading] = useState(false);
 
 
 
-  async function submitData() {
+  async function submitData(){
 
-    if (!income || !expense || !goal || !problem) {
-      alert("Lengkapi semua data terlebih dahulu.");
+
+    if(
+      !income ||
+      !expense ||
+      !goal ||
+      !problem
+    ){
+
+      alert("Lengkapi semua data terlebih dahulu");
       return;
+
     }
+
 
 
     setLoading(true);
 
 
-    try {
 
-      const response = await fetch("/api/analyze", {
+    try{
 
-        method: "POST",
 
-        headers: {
-          "Content-Type": "application/json",
-        },
+      // =========================
+      // AI ANALYSIS
+      // =========================
 
-        body: JSON.stringify({
 
-          income,
+      const response = await fetch(
+        "/api/analyze",
+        {
 
-          expense,
+          method:"POST",
 
-          saving_goal: goal,
+          headers:{
+            "Content-Type":"application/json"
+          },
 
-          financial_problem: problem
+          body:JSON.stringify({
 
-        }),
+            income,
+            expense,
+            saving_goal:goal,
+            financial_problem:problem
 
-      });
+          })
+
+        }
+      );
 
 
 
@@ -57,10 +75,9 @@ export default function AnalyzePage() {
 
 
 
-      if (!response.ok) {
+      if(!response.ok){
 
-        alert(aiData.error || "Terjadi kesalahan");
-
+        alert(aiData.error || "AI gagal");
         return;
 
       }
@@ -71,42 +88,110 @@ export default function AnalyzePage() {
 
 
 
-      const { error } = await supabase
 
-        .from("financial_analysis")
-
-        .insert({
-
-          income,
-
-          expense,
-
-          saving_goal: goal,
-
-          financial_problem: problem,
-
-          ai_result: aiData.result,
-
-        });
+      // =========================
+      // SIMPAN HASIL AI
+      // =========================
 
 
+      const {error:analysisError}=await supabase
 
-      if (error) {
+      .from("financial_analysis")
 
-        console.log(error);
+      .insert({
+
+        income:Number(income),
+
+        expense:Number(expense),
+
+        saving_goal:goal,
+
+        financial_problem:problem,
+
+        ai_result:aiData.result
+
+      });
+
+
+
+      if(analysisError){
+
+        console.log(
+          analysisError
+        );
 
       }
 
 
 
-    } catch (error) {
+
+
+      // =========================
+      // SIMPAN TRANSAKSI
+      // AGAR DASHBOARD TERISI
+      // =========================
+
+
+
+      const {error:transactionError}=await supabase
+
+      .from("transactions")
+
+      .insert([
+
+
+        {
+
+          category:"Pendapatan Awal",
+
+          amount:Number(income),
+
+          type:"income"
+
+        },
+
+
+        {
+
+          category:"Pengeluaran Awal",
+
+          amount:Number(expense),
+
+          type:"expense"
+
+        }
+
+
+      ]);
+
+
+
+
+      if(transactionError){
+
+        console.log(
+          transactionError
+        );
+
+      }
+
+
+
+
+    }
+
+    catch(error){
 
       console.log(error);
 
-      alert("Gagal melakukan analisis AI");
+      alert(
+        "Gagal melakukan analisis"
+      );
+
+    }
 
 
-    } finally {
+    finally{
 
       setLoading(false);
 
@@ -119,497 +204,441 @@ export default function AnalyzePage() {
 
 
 
-  return (
 
-    <main className="
-      min-h-screen
-      bg-gradient-to-b
-      from-white
-      via-[#F8FAFC]
-      to-[#ECFDF5]
-      px-8
-      py-12
-    ">
+return (
 
 
-      <div className="max-w-6xl mx-auto">
+<main className="
+min-h-screen
+bg-gradient-to-b
+from-white
+via-[#F8FAFC]
+to-[#ECFDF5]
+px-8
+py-12
+">
 
 
-        {/* HEADER */}
 
-        <div className="text-center mb-12">
+<div className="
+max-w-6xl
+mx-auto
+">
 
 
-          <div className="
-            inline-flex
-            bg-emerald-100
-            text-emerald-700
-            px-4
-            py-2
-            rounded-full
-            text-sm
-            font-semibold
-          ">
 
-            🤖 AI Financial Checkup
+<div className="
+text-center
+mb-12
+">
 
-          </div>
 
+<div className="
+inline-flex
+bg-emerald-100
+text-emerald-700
+px-4
+py-2
+rounded-full
+font-semibold
+text-sm
+">
 
+🤖 AI Financial Checkup
 
-          <h1 className="
-            text-4xl
-            font-bold
-            mt-5
-          ">
+</div>
 
-            Analyze Your Finance
 
-          </h1>
 
+<h1 className="
+text-4xl
+font-bold
+mt-5
+">
 
+Analyze Your Finance
 
-          <p className="
-            text-slate-600
-            mt-3
-          ">
+</h1>
 
-            Masukkan kondisi finansialmu dan
-            dapatkan rekomendasi dari AI.
 
-          </p>
 
+<p className="
+text-slate-600
+mt-3
+">
 
-        </div>
+Masukkan kondisi finansial dan dapatkan rekomendasi AI.
 
+</p>
 
 
+</div>
 
 
 
 
-        {/* TWO COLUMN */}
 
-        <div className="
-          grid
-          lg:grid-cols-2
-          gap-8
-          items-start
-        ">
 
+<div className="
+grid
+lg:grid-cols-2
+gap-8
+">
 
 
-          {/* LEFT FORM */}
 
-          <div className="
-            bg-white
-            rounded-[32px]
-            border
-            shadow-lg
-            p-8
-          ">
 
 
-            <h2 className="
-              text-xl
-              font-bold
-            ">
+{/* FORM */}
 
-              Financial Information
+<div className="
+bg-white
+rounded-3xl
+p-8
+shadow-lg
+">
 
-            </h2>
 
 
-            <p className="
-              text-sm
-              text-slate-500
-              mt-2
-            ">
+<h2 className="
+text-xl
+font-bold
+">
 
-              Isi data berikut untuk mendapatkan analisis.
+Financial Information
 
-            </p>
+</h2>
 
 
 
+<Input
 
+label="💰 Pendapatan Bulanan"
 
-            <InputField
+placeholder="8000000"
 
-              icon="💰"
+value={income}
 
-              label="Pendapatan Bulanan"
+setValue={setIncome}
 
-              placeholder="Contoh: 8000000"
+/>
 
-              value={income}
 
-              onChange={setIncome}
 
-            />
+<Input
 
+label="🛒 Pengeluaran Bulanan"
 
+placeholder="4500000"
 
+value={expense}
 
+setValue={setExpense}
 
-            <InputField
+/>
 
-              icon="🛒"
 
-              label="Pengeluaran Bulanan"
 
-              placeholder="Contoh: 4500000"
 
-              value={expense}
+<Input
 
-              onChange={setExpense}
+label="🎯 Tujuan Finansial"
 
-            />
+placeholder="Menabung rumah"
 
+value={goal}
 
+setValue={setGoal}
 
+/>
 
 
 
-            <InputField
 
-              icon="🎯"
 
-              label="Tujuan Finansial"
+<label className="
+font-semibold
+block
+mt-5
+">
 
-              placeholder="Contoh: Menabung rumah"
+⚠ Tantangan Finansial
 
-              value={goal}
+</label>
 
-              onChange={setGoal}
 
-            />
 
+<textarea
 
+className="
+w-full
+border
+rounded-2xl
+p-4
+mt-3
+h-32
+"
 
+placeholder="Contoh: Sulit mengatur pengeluaran"
 
+value={problem}
 
+onChange={
+e=>setProblem(e.target.value)
+}
 
-            <label className="
-              flex
-              items-center
-              gap-2
-              font-semibold
-              mt-5
-            ">
+/>
 
-              ⚠ Tantangan Finansial
 
-            </label>
 
 
 
-            <textarea
+<button
 
-              className="
-                w-full
-                mt-3
-                h-32
-                border
-                rounded-2xl
-                p-4
-                resize-none
-                focus:outline-none
-                focus:ring-2
-                focus:ring-emerald-300
-              "
+onClick={submitData}
 
-              placeholder="Contoh: Sulit mengontrol pengeluaran"
+disabled={loading}
 
-              value={problem}
+className="
+mt-6
+w-full
+bg-[#0F172A]
+text-white
+py-4
+rounded-2xl
+font-semibold
+"
 
-              onChange={(e)=>setProblem(e.target.value)}
+>
 
-            />
+{
 
+loading
 
+?
 
+"🤖 AI sedang menganalisis..."
 
+:
 
+"✨ Analisis dengan AI"
 
+}
 
-            <button
 
-              onClick={submitData}
+</button>
 
-              disabled={loading}
 
-              className="
-                mt-6
-                w-full
-                bg-[#0F172A]
-                text-white
-                py-4
-                rounded-2xl
-                font-semibold
-                hover:bg-slate-800
-                transition
-              "
 
-            >
 
-              {
+</div>
 
-                loading
 
-                ?
 
-                "🤖 AI sedang menganalisis..."
 
-                :
 
-                "✨ Analisis dengan AI"
 
-              }
 
 
-            </button>
 
+{/* RESULT */}
 
 
-          </div>
+<div className="
+bg-white
+rounded-3xl
+p-8
+shadow-lg
+min-h-[500px]
+">
 
 
 
+<h2 className="
+text-xl
+font-bold
+">
 
+🤖 AI Financial Insight
 
+</h2>
 
 
 
+<p className="
+text-sm
+text-slate-500
+mt-1
+">
 
+Powered by Gemini AI
 
-          {/* RIGHT AI PANEL */}
+</p>
 
-          <div className="
-            bg-white
-            rounded-[32px]
-            border
-            shadow-lg
-            p-8
-            min-h-[600px]
-          ">
 
 
-            <div className="
-              flex
-              items-center
-              gap-3
-            ">
 
 
-              <div className="
-                bg-emerald-100
-                p-3
-                rounded-xl
-              ">
+{
 
-                🤖
+result
 
-              </div>
+?
 
+<div className="
+mt-6
+bg-emerald-50
+rounded-2xl
+p-6
+whitespace-pre-line
+">
 
+{result}
 
-              <div>
 
 
-                <h2 className="font-bold text-xl">
+<a
 
-                  AI Financial Insight
+href="/dashboard"
 
-                </h2>
+className="
+inline-block
+mt-6
+bg-[#166534]
+text-white
+px-6
+py-3
+rounded-xl
+"
 
+>
 
-                <p className="
-                  text-sm
-                  text-slate-500
-                ">
+Lihat Dashboard →
 
-                  Powered by Gemini AI
+</a>
 
-                </p>
 
 
-              </div>
+</div>
 
 
-            </div>
 
+:
 
 
+<div className="
+mt-10
+space-y-5
+">
 
 
+<Card
+title="📊 Financial Analysis"
+text="AI akan menganalisis kondisi finansial."
+/>
 
 
-            {
+<Card
+title="💡 Recommendation"
+text="AI memberikan strategi pengelolaan uang."
+/>
 
-              result ?
 
+<Card
+title="🎯 Financial Goal"
+text="Membantu mencapai target finansial."
+/>
 
-              <div className="
-                mt-8
-                bg-emerald-50
-                rounded-2xl
-                p-6
-                text-slate-700
-                leading-relaxed
-                whitespace-pre-line
-              ">
 
-                {result}
-                <div className="mt-6">
 
-                <a
-                href="/dashboard"
-                className="
-                inline-block
-                bg-[#0F172A]
-                text-white
-                px-6
-                py-3
-                rounded-xl
-                font-semibold
-                hover:bg-slate-800
-                transition
-                "
-                >
-                Lihat Dashboard Finansial →
-                </a>
+</div>
 
-                </div>
 
-              </div>
+}
 
 
-              :
 
+</div>
 
-              <div className="
-                mt-10
-                space-y-5
-              ">
 
 
-                <div className="
-                  bg-slate-50
-                  rounded-2xl
-                  p-5
-                ">
+</div>
 
-                  <p className="
-                    font-semibold
-                  ">
 
-                    📊 Financial Analysis
 
-                  </p>
+</div>
 
 
-                  <p className="
-                    text-sm
-                    text-slate-500
-                    mt-2
-                  ">
+</main>
 
-                    AI akan mengevaluasi kondisi keuanganmu.
 
-                  </p>
+);
 
 
-                </div>
+}
 
 
 
 
 
-                <div className="
-                  bg-slate-50
-                  rounded-2xl
-                  p-5
-                ">
+function Input({
 
+label,
+placeholder,
+value,
+setValue
 
-                  <p className="font-semibold">
+}:{
 
-                    💡 Recommendation
+label:string;
+placeholder:string;
+value:string;
+setValue:(v:string)=>void;
 
-                  </p>
+}){
 
 
-                  <p className="
-                    text-sm
-                    text-slate-500
-                    mt-2
-                  ">
+return (
 
-                    Mendapatkan saran penghematan
-                    dan strategi finansial.
+<div className="
+mt-5
+">
 
-                  </p>
 
+<label className="
+font-semibold
+">
 
-                </div>
+{label}
 
+</label>
 
 
+<input
 
+className="
+w-full
+border
+rounded-2xl
+p-4
+mt-3
+"
 
-                <div className="
-                  bg-emerald-50
-                  rounded-2xl
-                  p-5
-                ">
+placeholder={placeholder}
 
+value={value}
 
-                  <p className="
-                    font-semibold
-                    text-emerald-700
-                  ">
+onChange={
+e=>setValue(e.target.value)
+}
 
-                    🎯 Financial Goal
+/>
 
-                  </p>
 
+</div>
 
-                  <p className="
-                    text-sm
-                    text-slate-600
-                    mt-2
-                  ">
+)
 
-                    Membantu mencapai target keuangan.
-
-                  </p>
-
-
-                </div>
-
-
-
-              </div>
-
-
-            }
-
-
-
-          </div>
-
-
-
-        </div>
-
-
-      </div>
-
-
-    </main>
-
-  );
 
 }
 
@@ -618,79 +647,49 @@ export default function AnalyzePage() {
 
 
 
+function Card({
 
-
-function InputField({
-
-icon,
-
-label,
-
-placeholder,
-
-value,
-
-onChange
+title,
+text
 
 }:{
 
-icon:string;
-
-label:string;
-
-placeholder:string;
-
-value:string;
-
-onChange:(value:string)=>void;
+title:string;
+text:string;
 
 }){
 
 
 return (
 
-<div className="mt-5">
-
-
-<label className="
-font-semibold
-flex
-items-center
-gap-2
+<div className="
+bg-slate-50
+rounded-2xl
+p-5
 ">
 
-{icon}
 
-{label}
+<h3 className="font-bold">
 
-</label>
+{title}
+
+</h3>
 
 
+<p className="
+text-sm
+text-slate-500
+mt-2
+">
 
-<input
+{text}
 
-className="
-w-full
-mt-3
-border
-rounded-2xl
-p-4
-focus:outline-none
-focus:ring-2
-focus:ring-emerald-300
-"
-
-placeholder={placeholder}
-
-value={value}
-
-onChange={(e)=>onChange(e.target.value)}
-
-/>
+</p>
 
 
 </div>
 
 )
+
 
 }

@@ -19,25 +19,33 @@ export const metadata: Metadata = {
 
 
 
+import Navbar from "./components/navbar";
+import "./globals.css";
+
+
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode
-}) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
 
-  return (
+return (
 
-    <html lang="en">
+<html lang="en">
 
-      <body>
+<body>
 
 
-        {children}
+<Navbar />
 
-      </body>
 
-    </html>
+{children}
 
-  );
+
+</body>
+
+</html>
+
+);
 
 }
